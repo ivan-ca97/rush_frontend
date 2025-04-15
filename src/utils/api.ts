@@ -1,4 +1,6 @@
-const baseURL = process.env.NEXT_PUBLIC_API_URL;
+import { getAuthenticationTokenFromCookies } from './server_side';
+
+const backendUrl = process.env.NEXT_PUBLIC_API_URL;
 
 
 const getClient = (headers = {}, noDefault?: boolean) => {
@@ -39,23 +41,41 @@ const request = async <T>(
   endpoint: string,
   data: object = {},
   headers: HeadersInit = {},
+  useAuth: boolean = true,
+  nextApiRoute: boolean = false,
 ): Promise<T> => {
   const isFormData = data instanceof FormData;
 
   const client = getClient(headers, isFormData);
 
+  const requestHeaders = new Headers({
+    ...client.headers,
+  })
+
+  const isServer = typeof window === 'undefined'
+  if (useAuth && isServer) {
+    const token = await getAuthenticationTokenFromCookies()
+
+    if (token) {
+      requestHeaders.set("Authorization", `Bearer ${token}`);
+    }
+  }
+
   const requestOptions: RequestInit = {
     method,
-    headers: new Headers(client.headers),
+    headers: requestHeaders,
     mode: "cors",
     cache: "no-cache",
+    credentials: 'include',
   };
 
   if (method !== "GET") {
     requestOptions.body = isFormData ? data : JSON.stringify(data);
   }
 
-  const url = `${baseURL}${endpoint}`;
+  const baseUrl = nextApiRoute ? "/" : backendUrl;
+  const url = `${baseUrl}${endpoint}`;
+
   return fetch(url, requestOptions)
     .then(parseResponse)
     .catch((error) => Promise.reject(error));
@@ -63,17 +83,23 @@ const request = async <T>(
 
 export const get = async <T>(
   endpoint: string,
+  parameters?: URLSearchParams,
+  useAuth: boolean = true,
+  nextApiRoute: boolean = false,
   headers?: HeadersInit,
 ): Promise<T> => {
-  return request("GET", endpoint, undefined, headers);
+  const url = parameters ? `${endpoint}?${parameters.toString()}` : endpoint;
+  return request("GET", url, undefined, headers, useAuth, nextApiRoute);
 };
 
 export const post = async <T>(
   endpoint: string,
   data: object = {},
+  useAuth: boolean = true,
+  nextApiRoute: boolean = false,
   headers?: HeadersInit,
 ): Promise<T> => {
-  return request("POST", endpoint, data, headers);
+  return request("POST", endpoint, data, headers, useAuth, nextApiRoute);
 };
 
 export const put = async <T>(
