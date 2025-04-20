@@ -1,4 +1,5 @@
 import { getAuthenticationTokenFromCookies } from './server_side';
+import Raw from '@/types/raw_type';
 
 const backendUrl = process.env.NEXT_PUBLIC_API_URL;
 
@@ -43,6 +44,7 @@ const request = async <T>(
   headers: HeadersInit = {},
   useAuth: boolean = true,
   nextApiRoute: boolean = false,
+  parser?: (raw: Raw<T>) => T,
 ): Promise<T> => {
   const isFormData = data instanceof FormData;
 
@@ -76,9 +78,13 @@ const request = async <T>(
   const baseUrl = nextApiRoute ? "/" : backendUrl;
   const url = `${baseUrl}${endpoint}`;
 
-  return fetch(url, requestOptions)
+  const raw = await fetch(url, requestOptions)
     .then(parseResponse)
     .catch((error) => Promise.reject(error));
+
+  if (!parser) return raw;
+
+  return parser ? parser(raw as Raw<T>) : raw as T;
 };
 
 export const get = async <T>(
@@ -87,9 +93,10 @@ export const get = async <T>(
   useAuth: boolean = true,
   nextApiRoute: boolean = false,
   headers?: HeadersInit,
+  parser?: (raw: Raw<T>) => T,
 ): Promise<T> => {
   const url = parameters ? `${endpoint}?${parameters.toString()}` : endpoint;
-  return request("GET", url, undefined, headers, useAuth, nextApiRoute);
+  return request("GET", url, undefined, headers, useAuth, nextApiRoute, parser);
 };
 
 export const post = async <T>(
