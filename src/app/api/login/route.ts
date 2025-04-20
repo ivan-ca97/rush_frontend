@@ -6,7 +6,7 @@ import { LoginResponse, LoginRequest } from "@/types/authentication"
 
 const tokenExpirationDays = Number(process.env.NEXT_PUBLIC_TOKEN_EXPIRATION_DAYS);
 
-export async function POST(request: NextRequest) {
+const POST = async (request: NextRequest) => {
   const body = (await request.json()) as LoginRequest;
 
   const backendResponse = await post<LoginResponse>("/authentication/login", body, false);
@@ -25,3 +25,5 @@ export async function POST(request: NextRequest) {
 
   return response;
 }
+
+export default POST

@@ -11,7 +11,7 @@ interface TableProps<T> {
   columns: Column<T>[];
 }
 
-export default function Table<T>({ data, columns }: TableProps<T>) {
+const Table = <T,> ({ data, columns }: TableProps<T>) => {
   return (
     <table className="min-w-full divide-y divide-gray-200">
       <thead className="bg-gray-50">
@@ -40,3 +40,5 @@ export default function Table<T>({ data, columns }: TableProps<T>) {
     </table>
   );
 }
+
+export default Table;

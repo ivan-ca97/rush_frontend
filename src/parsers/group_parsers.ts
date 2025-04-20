@@ -9,11 +9,11 @@ export const groupParser: FieldTransformMap<Group> = {
     deleted_at: (v) => v ? new Date(v) : null,
 };
 
-export function parseGroup(raw: any): Group {
+export const parseGroup = (raw: any): Group => {
   return applyFieldTransforms<Group>(raw, groupParser);
 }
 
-export function parseGetAllGroupsResponse(raw: any): GetAllGroupsResponse {
+export const parseGetAllGroupsResponse = (raw: any): GetAllGroupsResponse => {
 
   const groups = raw.groups.map(parseGroup)
 

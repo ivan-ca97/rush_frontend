@@ -2,7 +2,7 @@ export type FieldTransformMap<T> = {
     [K in keyof T]?: (value: any) => T[K];
 };
 
-export function applyFieldTransforms<T extends object>(obj: T, map: FieldTransformMap<T>): T {
+export const applyFieldTransforms = <T extends object> (obj: T, map: FieldTransformMap<T>): T => {
     const result: any = { ...obj };
 
     for (const key in map) {
